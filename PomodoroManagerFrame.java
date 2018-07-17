@@ -100,7 +100,7 @@ public class PomodoroManagerFrame extends JFrame
 					if (counting)
 					{
 						remainingTime--;
-						countdownLabel.setText(formatTimeString());
+						setFrameText();
 
 						if (remainingTime == 0)
 						{
@@ -139,7 +139,7 @@ public class PomodoroManagerFrame extends JFrame
 						case POMODORO: remainingTime = POMODORO_TIME; break;
 						case REST: remainingTime = REST_TIME; break;
 					}
-					countdownLabel.setText(formatTimeString());
+					setFrameText();
 
 				}
 			}
@@ -147,5 +147,21 @@ public class PomodoroManagerFrame extends JFrame
 
 	}
 
-	
+	/**
+	* Updates the text of the frame, both the label's text and the titles.
+	*/
+	private void setFrameText()
+	{
+		String mode;
+		switch (currentMode)
+		{
+			case POMODORO: mode = "Pomodoro"; break;
+			case REST: mode = "Rest"; break;
+			default: mode = "";
+		}
+		String formattedTime = formatTimeString();
+		
+		countdownLabel.setText(formattedTime);
+		setTitle(formattedTime + " - " + mode);
+	}
 }
