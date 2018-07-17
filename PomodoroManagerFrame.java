@@ -61,7 +61,7 @@ public class PomodoroManagerFrame extends JFrame
 	*/
 	private void setButtonState(boolean state)
 	{
-
+		counting = state;
 		if (state)
 		{
 			playPauseButton.setText("PAUSE");
@@ -104,8 +104,7 @@ public class PomodoroManagerFrame extends JFrame
 
 						if (remainingTime == 0)
 						{
-							counting = false;
-							setButtonState(counting);
+							setButtonState(false);
 							//finished(); TODO
 						}
 					}
@@ -119,10 +118,15 @@ public class PomodoroManagerFrame extends JFrame
 				@Override
 				public void actionPerformed(ActionEvent event)
 				{
-					counting = !counting;
-					setButtonState(counting);
-
-
+					setButtonState(!counting);
+					if (remainingTime <= 0)
+					{
+						switch (currentMode)
+						{
+							case POMODORO: remainingTime = POMODORO_TIME; break;
+							case REST: remainingTime = REST_TIME; break;
+						}
+					}
 				}
 			}
 			);
@@ -132,8 +136,7 @@ public class PomodoroManagerFrame extends JFrame
 				@Override
 				public void actionPerformed(ActionEvent event)
 				{
-					counting = false;
-					setButtonState(counting);
+					setButtonState(false);
 					switch (currentMode)
 					{
 						case POMODORO: remainingTime = POMODORO_TIME; break;
@@ -148,7 +151,7 @@ public class PomodoroManagerFrame extends JFrame
 	}
 
 	/**
-	* Updates the text of the frame, both the label's text and the titles.
+	* Updates the text of the frame, both the label's text and the title's.
 	*/
 	private void setFrameText()
 	{
@@ -160,7 +163,7 @@ public class PomodoroManagerFrame extends JFrame
 			default: mode = "";
 		}
 		String formattedTime = formatTimeString();
-		
+
 		countdownLabel.setText(formattedTime);
 		setTitle(formattedTime + " - " + mode);
 	}
