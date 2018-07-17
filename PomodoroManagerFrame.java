@@ -1,6 +1,11 @@
 // Pomodoro Manager
 // Yarden Shoham 2018
 
+// sound imports
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+
 // GUI imports
 import javax.swing.*;
 import java.awt.*;
@@ -17,9 +22,10 @@ public class PomodoroManagerFrame extends JFrame
 	private modes currentMode = modes.POMODORO;
 	private int remainingTime;
 
-
 	private static final int POMODORO_TIME = 25 * 60; // 25 minutes * 60 seconds
 	private static final int REST_TIME = 5 * 60;
+
+	private Clip finishedSound;
 
 	/**
 	* This frame will be what the user will use to work with the program.
@@ -53,6 +59,18 @@ public class PomodoroManagerFrame extends JFrame
 		add(southPanel, BorderLayout.SOUTH);
 
 		handleHandlers();
+
+		// sound initialization
+		try
+		{
+			AudioInputStream audioIn = AudioSystem.getAudioInputStream(getClass().getResource("finishedSound.wav"));
+			finishedSound = AudioSystem.getClip();
+			finishedSound.open(audioIn);
+		}
+		catch (Exception e)
+		{
+			System.out.println(e);
+		}
 	}
 
 	/**
@@ -105,7 +123,7 @@ public class PomodoroManagerFrame extends JFrame
 						if (remainingTime == 0)
 						{
 							setButtonState(false);
-							//finished(); TODO
+							finished();
 						}
 					}
 				}
@@ -167,4 +185,20 @@ public class PomodoroManagerFrame extends JFrame
 		countdownLabel.setText(formattedTime);
 		setTitle(formattedTime + " - " + mode);
 	}
+
+	/**
+	* When the countdown is finished this method will be called.
+	*/
+	private void finished()
+	{
+		try
+		{
+			finishedSound.start();
+		}
+		catch (Exception e)
+		{
+			System.out.println(e);
+		}
+	}
+
 }
