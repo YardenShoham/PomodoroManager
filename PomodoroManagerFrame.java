@@ -16,17 +16,20 @@ public class PomodoroManagerFrame extends JFrame
 	private JButton playPauseButton;
 	private JButton resetButton;
 
-	private JButton pomodoroModeButton, restModeButton;
+	private JButton[] modeButtons;
 
 	private JLabel countdownLabel;
 
-	private boolean counting;
 	private enum modes { POMODORO, REST };
-	private modes currentMode = modes.POMODORO;
+	private modes[] modesArray = modes.values();
+	private modes currentMode;
+
+	private boolean counting;
 	private int remainingTime;
 
-	private static final int POMODORO_TIME = 25 * 60; // 25 minutes * 60 seconds
-	private static final int REST_TIME = 5 * 60;
+	private static final int[] times = { 25 * 60, 5 * 60 }; // minutes * seconds
+
+	private String modeNames[] = { "Pomodoro", "Rest" };
 
 	private Clip finishedSound;
 
@@ -38,20 +41,25 @@ public class PomodoroManagerFrame extends JFrame
 	{
 		super(title);
 
-		// setting time starting with pomodoro
-		remainingTime = POMODORO_TIME;
+		// setting default time and mode
+		remainingTime = times[0];
+		currentMode = modesArray[0];
 
 		// constructing
 		resetButton = new JButton("RESET");
 		playPauseButton = new JButton();
-		pomodoroModeButton = new JButton("POMODORO");
-		restModeButton = new JButton("REST");
+
+		modeButtons = new JButton[modesArray.length];
+		for (int i = 0; i < modeButtons.length; i++)
+		{
+			modeButtons[i] = new JButton(modeNames[i]);
+		}
 		countdownLabel = new JLabel(formatTimeString(), SwingConstants.CENTER);
 
 		// customizing
 		countdownLabel.setFont(new Font("Serif", Font.PLAIN, 50));
 		playPauseButton.setForeground(Color.WHITE);
-		setButtonState(counting);
+		setState(counting);
 
 		// placing everything in its place
 		JPanel southPanel = new JPanel();
@@ -60,8 +68,10 @@ public class PomodoroManagerFrame extends JFrame
 
 		JPanel northPanel = new JPanel(new GridLayout(2, 1));
 		JPanel modesPanel = new JPanel();
-		modesPanel.add(pomodoroModeButton);
-		modesPanel.add(restModeButton);
+		for (int i = 0; i < modeButtons.length; i++)
+		{
+			modesPanel.add(modeButtons[i]);
+		}
 		northPanel.add(modesPanel);
 
 		add(northPanel, BorderLayout.NORTH);
@@ -84,10 +94,10 @@ public class PomodoroManagerFrame extends JFrame
 	}
 
 	/**
-	* This method updates the START/PAUSE button's text and color according to its state.
+	* This method updates the START/PAUSE button's text and color according to its state as well as the program's state.
 	* @param state false if the counter is paused and true if the counter is running.
 	*/
-	private void setButtonState(boolean state)
+	private void setState(boolean state)
 	{
 		counting = state;
 		if (state)
@@ -132,7 +142,7 @@ public class PomodoroManagerFrame extends JFrame
 
 						if (remainingTime == 0)
 						{
-							setButtonState(false);
+							setState(false);
 							finished();
 						}
 					}
@@ -147,14 +157,9 @@ public class PomodoroManagerFrame extends JFrame
 				@Override
 				public void actionPerformed(ActionEvent event)
 				{
-					setButtonState(!counting);
-					if (remainingTime <= 0)
+					if (remainingTime != 0)
 					{
-						switch (currentMode)
-						{
-							case POMODORO: remainingTime = POMODORO_TIME; break;
-							case REST: remainingTime = REST_TIME; break;
-						}
+						setState(!counting);
 					}
 				}
 			}
@@ -166,11 +171,14 @@ public class PomodoroManagerFrame extends JFrame
 				@Override
 				public void actionPerformed(ActionEvent event)
 				{
-					setButtonState(false);
-					switch (currentMode)
+					setState(false);
+					for (int i = 0; i < modesArray.length; i++)
 					{
-						case POMODORO: remainingTime = POMODORO_TIME; break;
-						case REST: remainingTime = REST_TIME; break;
+						if (currentMode == modesArray[i])
+						{
+							remainingTime = times[i];
+							break;
+						}
 					}
 					updateFrameText();
 
@@ -178,34 +186,11 @@ public class PomodoroManagerFrame extends JFrame
 			}
 			);
 
-		pomodoroModeButton.addActionListener(
-			new ActionListener()
-			{
-				@Override
-				public void actionPerformed(ActionEvent event)
-				{
-					setButtonState(false);
-					currentMode = modes.POMODORO;
-					remainingTime = POMODORO_TIME;
-					updateFrameText();
-				}
-			}
-			);
-
-		restModeButton.addActionListener(
-			new ActionListener()
-			{
-				@Override
-				public void actionPerformed(ActionEvent event)
-				{
-					setButtonState(false);
-					currentMode = modes.REST;
-					remainingTime = REST_TIME;
-					updateFrameText();
-				}
-			}
-			);
-
+		ModeButtonsHandler modeButtonsHandler = new ModeButtonsHandler();
+		for (int i = 0; i < modeButtons.length; i++)
+		{
+			modeButtons[i].addActionListener(modeButtonsHandler);
+		}
 	}
 
 	/**
@@ -213,12 +198,14 @@ public class PomodoroManagerFrame extends JFrame
 	*/
 	private void updateFrameText()
 	{
-		String mode;
-		switch (currentMode)
+		String mode = null;
+		for (int i = 0; i < modesArray.length; i++)
 		{
-			case POMODORO: mode = "Pomodoro"; break;
-			case REST: mode = "Rest"; break;
-			default: mode = "";
+			if (currentMode == modesArray[i])
+			{
+				mode = modeNames[i];
+				break;
+			}
 		}
 		String formattedTime = formatTimeString();
 
@@ -238,6 +225,28 @@ public class PomodoroManagerFrame extends JFrame
 		catch (Exception e)
 		{
 			System.out.println(e);
+		}
+	}
+
+	/**
+	* A handler for the mode buttons. Sets the program to its appropriate state.
+	*/
+	private class ModeButtonsHandler implements ActionListener
+	{
+		@Override
+		public void actionPerformed(ActionEvent event)
+		{
+			setState(false);
+			JButton source = (JButton) event.getSource();
+			for (int i = 0; i < modeButtons.length; i++)
+			{
+				if (source == modeButtons[i])
+				{
+					remainingTime = times[i];
+					break;
+				}
+			}
+			updateFrameText();
 		}
 	}
 
