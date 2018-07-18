@@ -27,9 +27,11 @@ public class PomodoroManagerFrame extends JFrame
 	private boolean counting;
 	private int remainingTime;
 
-	private static final int[] times = { 1 * 6, 5 * 60 }; // minutes * seconds
+	private static final int[] times = { 25 * 60, 5 * 60 }; // minutes * seconds
 
 	private String modeNames[] = { "Pomodoro", "Rest" };
+
+	private Clip finishedSound;
 
 	/**
 	* This frame will be what the user will use to work with the program.
@@ -77,6 +79,18 @@ public class PomodoroManagerFrame extends JFrame
 		add(southPanel, BorderLayout.SOUTH);
 
 		handleHandlers();
+
+		// sound initialization
+		try
+		{
+			AudioInputStream audioIn = AudioSystem.getAudioInputStream(getClass().getResource("finishedSound.wav"));
+			finishedSound = AudioSystem.getClip();
+			finishedSound.open(audioIn);
+		}
+		catch (Exception e)
+		{
+			System.out.println(e);
+		}
 	}
 
 	/**
@@ -204,12 +218,8 @@ public class PomodoroManagerFrame extends JFrame
 	*/
 	private void finished()
 	{
-		// playing the beeping sound
 		try
 		{
-			AudioInputStream audioIn = AudioSystem.getAudioInputStream(getClass().getResource("finishedSound.wav"));
-			finishedSound = AudioSystem.getClip();
-			finishedSound.open(audioIn);
 			finishedSound.start();
 		}
 		catch (Exception e)
