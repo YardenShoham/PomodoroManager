@@ -15,6 +15,9 @@ public class PomodoroManagerFrame extends JFrame
 {
 	private JButton playPauseButton;
 	private JButton resetButton;
+
+	private JButton pomodoroModeButton, restModeButton;
+
 	private JLabel countdownLabel;
 
 	private boolean counting;
@@ -38,11 +41,11 @@ public class PomodoroManagerFrame extends JFrame
 		// setting time starting with pomodoro
 		remainingTime = POMODORO_TIME;
 
-		// Placing everything in its place
-
 		// constructing
 		resetButton = new JButton("RESET");
 		playPauseButton = new JButton();
+		pomodoroModeButton = new JButton("POMODORO");
+		restModeButton = new JButton("REST");
 		countdownLabel = new JLabel(formatTimeString(), SwingConstants.CENTER);
 
 		// customizing
@@ -50,11 +53,18 @@ public class PomodoroManagerFrame extends JFrame
 		playPauseButton.setForeground(Color.WHITE);
 		setButtonState(counting);
 
-
+		// placing everything in its place
 		JPanel southPanel = new JPanel();
 		southPanel.add(playPauseButton);
 		southPanel.add(resetButton);
 
+		JPanel northPanel = new JPanel(new GridLayout(2, 1));
+		JPanel modesPanel = new JPanel();
+		modesPanel.add(pomodoroModeButton);
+		modesPanel.add(restModeButton);
+		northPanel.add(modesPanel);
+
+		add(northPanel, BorderLayout.NORTH);
 		add(countdownLabel);
 		add(southPanel, BorderLayout.SOUTH);
 
@@ -118,7 +128,7 @@ public class PomodoroManagerFrame extends JFrame
 					if (counting)
 					{
 						remainingTime--;
-						setFrameText();
+						updateFrameText();
 
 						if (remainingTime == 0)
 						{
@@ -130,6 +140,7 @@ public class PomodoroManagerFrame extends JFrame
 			}
 			);
 		countingTimer.start();
+
 		playPauseButton.addActionListener(
 			new ActionListener()
 			{
@@ -148,6 +159,7 @@ public class PomodoroManagerFrame extends JFrame
 				}
 			}
 			);
+
 		resetButton.addActionListener(
 			new ActionListener()
 			{
@@ -160,8 +172,36 @@ public class PomodoroManagerFrame extends JFrame
 						case POMODORO: remainingTime = POMODORO_TIME; break;
 						case REST: remainingTime = REST_TIME; break;
 					}
-					setFrameText();
+					updateFrameText();
 
+				}
+			}
+			);
+
+		pomodoroModeButton.addActionListener(
+			new ActionListener()
+			{
+				@Override
+				public void actionPerformed(ActionEvent event)
+				{
+					setButtonState(false);
+					currentMode = modes.POMODORO;
+					remainingTime = POMODORO_TIME;
+					updateFrameText();
+				}
+			}
+			);
+
+		restModeButton.addActionListener(
+			new ActionListener()
+			{
+				@Override
+				public void actionPerformed(ActionEvent event)
+				{
+					setButtonState(false);
+					currentMode = modes.REST;
+					remainingTime = REST_TIME;
+					updateFrameText();
 				}
 			}
 			);
@@ -171,7 +211,7 @@ public class PomodoroManagerFrame extends JFrame
 	/**
 	* Updates the text of the frame, both the label's text and the title's.
 	*/
-	private void setFrameText()
+	private void updateFrameText()
 	{
 		String mode;
 		switch (currentMode)
