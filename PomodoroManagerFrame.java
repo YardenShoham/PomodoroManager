@@ -53,7 +53,9 @@ public class PomodoroManagerFrame extends JFrame
 	*/
 	public PomodoroManagerFrame()
 	{
+		// setting the look of the top part of the window
 		setTitle(title);
+		setIconImage(new ImageIcon(getClass().getResource("pomodoroIcon.png")).getImage());
 
 		// getting number of pomodoros
 		loadHashtable();
