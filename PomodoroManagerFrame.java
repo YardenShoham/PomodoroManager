@@ -13,14 +13,25 @@ import java.awt.event.*;
 import java.util.Hashtable;
 import java.io.*;
 
+/**
+* A program to use while working with the Pomodoro technique. It counts how many pomodoros were done every day and logs that information.
+* This class presents the GUI aspect of the program. There is a countdown timer, a rest mode, a start\pause button as well as a rest button.
+* One can use this program to track how many hours were used to work\study.
+* @author Yarden Shoham
+*/
 public class PomodoroManagerFrame extends JFrame
 {
+	private String title = "Pomodoro Manager";
+
 	private JButton playPauseButton;
 	private JButton resetButton;
 
 	private JButton[] modeButtons;
 
 	private JLabel countdownLabel;
+
+	private JLabel pomodoroCounter;
+	private String pomodoroCounterBaseText = "Amount of Pomodoros done today: ";
 
 	private enum modes { POMODORO, REST };
 	private modes[] modesArray = modes.values();
@@ -39,11 +50,13 @@ public class PomodoroManagerFrame extends JFrame
 
 	/**
 	* This frame will be what the user will use to work with the program.
-	* @param title the title of the frame
 	*/
-	public PomodoroManagerFrame(String title)
+	public PomodoroManagerFrame()
 	{
-		super(title);
+		setTitle(title);
+
+		// getting number of pomodoros
+		loadHashtable();
 
 		// setting default time and mode
 		remainingTime = times[0];
@@ -54,11 +67,10 @@ public class PomodoroManagerFrame extends JFrame
 		playPauseButton = new JButton();
 
 		modeButtons = new JButton[modesArray.length];
-		for (int i = 0; i < modeButtons.length; i++)
-		{
-			modeButtons[i] = new JButton(modeNames[i]);
-		}
+		for (int i = 0; i < modeButtons.length; i++) modeButtons[i] = new JButton(modeNames[i]);
+
 		countdownLabel = new JLabel(formatTimeString(), SwingConstants.CENTER);
+		pomodoroCounter = new JLabel(pomodoroCounterBaseText + pomodoroAmountTable.get(currentDate));
 
 		// customizing
 		countdownLabel.setFont(new Font("Serif", Font.PLAIN, 50));
@@ -72,20 +84,15 @@ public class PomodoroManagerFrame extends JFrame
 
 		JPanel northPanel = new JPanel(new GridLayout(2, 1));
 		JPanel modesPanel = new JPanel();
-		for (int i = 0; i < modeButtons.length; i++)
-		{
-			modesPanel.add(modeButtons[i]);
-		}
+		for (int i = 0; i < modeButtons.length; i++) modesPanel.add(modeButtons[i]);
 		northPanel.add(modesPanel);
+		northPanel.add(pomodoroCounter);
 
 		add(northPanel, BorderLayout.NORTH);
 		add(countdownLabel);
 		add(southPanel, BorderLayout.SOUTH);
 
 		handleHandlers();
-
-		loadHashtable();
-
 	}
 		
 
@@ -134,7 +141,7 @@ public class PomodoroManagerFrame extends JFrame
 					if (counting)
 					{
 						remainingTime--;
-						updateFrameText();
+						updateFrameText(true);
 
 						if (remainingTime == 0)
 						{
@@ -176,7 +183,7 @@ public class PomodoroManagerFrame extends JFrame
 							break;
 						}
 					}
-					updateFrameText();
+					updateFrameText(true);
 
 				}
 			}
@@ -191,22 +198,26 @@ public class PomodoroManagerFrame extends JFrame
 
 	/**
 	* Updates the text of the frame, both the label's text and the title's.
+	* @param changeFrameTitle true to update the frame's title with the remaining time and current mode; false to do nothing to the frame's title
 	*/
-	private void updateFrameText()
+	private void updateFrameText(boolean changeFrameTitle)
 	{
-		String mode = null;
-		for (int i = 0; i < modesArray.length; i++)
-		{
-			if (currentMode == modesArray[i])
-			{
-				mode = modeNames[i];
-				break;
-			}
-		}
 		String formattedTime = formatTimeString();
-
 		countdownLabel.setText(formattedTime);
-		setTitle(formattedTime + " - " + mode);
+
+		if (changeFrameTitle)
+		{
+			String mode = null;
+			for (int i = 0; i < modesArray.length; i++)
+			{
+				if (currentMode == modesArray[i])
+				{
+					mode = modeNames[i];
+					break;
+				}
+			}
+			setTitle(formattedTime + " - " + mode);
+		}
 	}
 
 	/**
@@ -227,6 +238,7 @@ public class PomodoroManagerFrame extends JFrame
 				// update count
 				Integer count = pomodoroAmountTable.get(currentDate);
 				pomodoroAmountTable.put(currentDate, ++count);
+				pomodoroCounter.setText(pomodoroCounterBaseText + count);
 				
 				// write updated table to file
 				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(logTableLocation));
@@ -279,6 +291,7 @@ public class PomodoroManagerFrame extends JFrame
 		public void actionPerformed(ActionEvent event)
 		{
 			setState(false);
+
 			JButton source = (JButton) event.getSource();
 			for (int i = 0; i < modeButtons.length; i++)
 			{
@@ -289,7 +302,8 @@ public class PomodoroManagerFrame extends JFrame
 					break;
 				}
 			}
-			updateFrameText();
+			updateFrameText(false);
+			setTitle(title);
 		}
 	}
 

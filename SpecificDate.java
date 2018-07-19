@@ -3,6 +3,7 @@ import java.io.Serializable;
 
 /**
 * A class representing a date with day precision.
+* @author Yarden Shoham
 */
 public class SpecificDate implements Serializable
 {
@@ -51,6 +52,9 @@ public class SpecificDate implements Serializable
 	@Override
 	public int hashCode()
 	{
-		return (day + month + year);
+		Integer d = day;
+		Integer m = month;
+		Integer y = year;
+		return (d.hashCode() + m.hashCode() + y.hashCode());
 	}
 }
