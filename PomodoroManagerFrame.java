@@ -2,14 +2,16 @@
 // Yarden Shoham 2018
 
 // sound imports
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
+import javax.sound.sampled.*;
 
 // GUI imports
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+
+// hashtable pomodoro counter imports
+import java.util.Hashtable;
+import java.io.*;
 
 public class PomodoroManagerFrame extends JFrame
 {
@@ -31,7 +33,9 @@ public class PomodoroManagerFrame extends JFrame
 
 	private String modeNames[] = { "Pomodoro", "Rest" };
 
-	private Clip finishedSound;
+	private Hashtable<SpecificDate, Integer> pomodoroAmountTable;
+	private SpecificDate currentDate = new SpecificDate();
+	private String logTableLocation = "table.bin";
 
 	/**
 	* This frame will be what the user will use to work with the program.
@@ -80,18 +84,10 @@ public class PomodoroManagerFrame extends JFrame
 
 		handleHandlers();
 
-		// sound initialization
-		try
-		{
-			AudioInputStream audioIn = AudioSystem.getAudioInputStream(getClass().getResource("finishedSound.wav"));
-			finishedSound = AudioSystem.getClip();
-			finishedSound.open(audioIn);
-		}
-		catch (Exception e)
-		{
-			System.out.println(e);
-		}
+		loadHashtable();
+
 	}
+		
 
 	/**
 	* This method updates the START/PAUSE button's text and color according to its state as well as the program's state.
@@ -220,7 +216,53 @@ public class PomodoroManagerFrame extends JFrame
 	{
 		try
 		{
+			// playing the beeping sound
+			AudioInputStream audioIn = AudioSystem.getAudioInputStream(getClass().getResource("finishedSound.wav"));
+			Clip finishedSound = AudioSystem.getClip();
+			finishedSound.open(audioIn);
 			finishedSound.start();
+
+			if (currentMode == modes.POMODORO)
+			{
+				// update count
+				Integer count = pomodoroAmountTable.get(currentDate);
+				pomodoroAmountTable.put(currentDate, ++count);
+				
+				// write updated table to file
+				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(logTableLocation));
+				oos.writeObject(pomodoroAmountTable);
+				oos.close();
+			}
+		}
+		catch (Exception e)
+		{
+			System.out.println(e);
+		}
+
+
+	}
+
+	/**
+	* Handles the loading of the hashtable.
+	*/
+	@SuppressWarnings("unchecked") // there is a cast inside, it is safe
+	private void loadHashtable()
+	{
+		try
+		{
+			File temp = new File(logTableLocation);
+			if (temp.exists() && !temp.isDirectory())
+			{
+				ObjectInputStream ois = new ObjectInputStream(new FileInputStream(logTableLocation));
+				pomodoroAmountTable = (Hashtable<SpecificDate, Integer>) ois.readObject();
+				if (!pomodoroAmountTable.containsKey(currentDate)) pomodoroAmountTable.put(currentDate, new Integer(0));
+				ois.close();
+			}
+			else
+			{
+				pomodoroAmountTable = new Hashtable<>();
+				pomodoroAmountTable.put(currentDate, new Integer(0));
+			}
 		}
 		catch (Exception e)
 		{
@@ -242,6 +284,7 @@ public class PomodoroManagerFrame extends JFrame
 			{
 				if (source == modeButtons[i])
 				{
+					currentMode = modesArray[i];
 					remainingTime = times[i];
 					break;
 				}
