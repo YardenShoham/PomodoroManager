@@ -27,6 +27,9 @@ public class SpecificDate implements Serializable
 	@Override
 	public boolean equals(Object obj)
 	{
+		if (obj == this) return true;
+		if (!(obj instanceof SpecificDate)) return false;
+
 		SpecificDate other = (SpecificDate) obj;
 		return (day == other.day && month == other.month && year == other.year);
 	}
