@@ -55,7 +55,7 @@ public class PomodoroManagerFrame extends JFrame
 	{
 		// setting the look of the top part of the window
 		setTitle(title);
-		setIconImage(new ImageIcon(getClass().getResource("pomodoroIcon.png")).getImage());
+		setIconImage(new ImageIcon(getClass().getResource("resources/pomodoroIcon.png")).getImage());
 
 		// getting number of pomodoros
 		loadHashtable();
@@ -230,7 +230,7 @@ public class PomodoroManagerFrame extends JFrame
 		try
 		{
 			// playing the beeping sound
-			AudioInputStream audioIn = AudioSystem.getAudioInputStream(getClass().getResource("finishedSound.wav"));
+			AudioInputStream audioIn = AudioSystem.getAudioInputStream(getClass().getResource("resources/finishedSound.wav"));
 			Clip finishedSound = AudioSystem.getClip();
 			finishedSound.open(audioIn);
 			finishedSound.start();
