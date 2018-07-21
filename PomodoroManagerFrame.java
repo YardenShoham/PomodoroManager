@@ -46,7 +46,8 @@ public class PomodoroManagerFrame extends JFrame
 
 	private Hashtable<SpecificDate, Integer> pomodoroAmountTable;
 	private SpecificDate currentDate = new SpecificDate();
-	private String logTableLocation = "table.bin";
+	private String logTableLocation = System.getProperty("user.home") + "\\PomodoroManager\\log";
+	private String logTableFileName = "table.bin";
 
 	/**
 	* This frame will be what the user will use to work with the program.
@@ -243,7 +244,7 @@ public class PomodoroManagerFrame extends JFrame
 				pomodoroCounter.setText(pomodoroCounterBaseText + count);
 				
 				// write updated table to file
-				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(logTableLocation));
+				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(logTableLocation + "\\" + logTableFileName));
 				oos.writeObject(pomodoroAmountTable);
 				oos.close();
 			}
@@ -265,9 +266,12 @@ public class PomodoroManagerFrame extends JFrame
 		try
 		{
 			File temp = new File(logTableLocation);
+			temp.mkdirs(); // create the necessary folders in the system
+
+			temp = new File(logTableLocation + "\\" + logTableFileName);
 			if (temp.exists() && !temp.isDirectory())
 			{
-				ObjectInputStream ois = new ObjectInputStream(new FileInputStream(logTableLocation));
+				ObjectInputStream ois = new ObjectInputStream(new FileInputStream(logTableLocation + "\\" + logTableFileName));
 				pomodoroAmountTable = (Hashtable<SpecificDate, Integer>) ois.readObject();
 				if (!pomodoroAmountTable.containsKey(currentDate)) pomodoroAmountTable.put(currentDate, new Integer(0));
 				ois.close();
